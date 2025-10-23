@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">My Bills</h2>
+            <div class="space-x-2">
+                <a href="{{ url_for('download_csv') }}" 
+                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-download mr-2"></i>Download CSV
+                </a>
+                <a href="{{ url_for('chat') }}" 
+                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-plus mr-2"></i>Create Bill
+                </a>
+            </div>
+        </div>
+        
+        {% if bills %}
+        <div class="space-y-6">
+            {% for bill in bills %}
+            <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800">{{ bill.description }}</h3>
+                        <p class="text-gray-600 mt-1">{{ bill.visit_details or 'No additional details' }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>{{ bill.visit_date.strftime('%Y-%m-%d') }}</span>
+                            <span><i class="fas fa-clock mr-1"></i>{{ bill.created_at.strftime('%H:%M') }}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-green-600">${{ "%.2f"|format(bill.final_amount) }}</div>
+                        <div class="text-sm text-gray-500">
+                            Base: ${{ "%.2f"|format(bill.total_amount) }}
+                            {% if bill.tax_amount > 0 %}+ Tax: ${{ "%.2f"|format(bill.tax_amount) }}{% endif %}
+                            {% if bill.discount_amount > 0 %}- Discount: ${{ "%.2f"|format(bill.discount_amount) }}{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-700 mb-3">Participants:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {% for participant in bill.participants %}
+                        <div class="flex justify-between items-center bg-white rounded px-3 py-2 border">
+                            <span class="text-gray-800 font-medium">
+                                {{ participant.friend.name }}
+                            </span>
+                            <span class="font-semibold text-blue-600">
+                                ${{ "%.2f"|format(participant.amount_owed) }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-receipt text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-2">No bills yet</p>
+            <p class="text-gray-400 mb-6">Create your first bill to start tracking shared expenses</p>
+            <a href="{{ url_for('chat') }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                <i class="fas fa-plus mr-2"></i>Create Your First Bill
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
